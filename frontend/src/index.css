@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+* {
+	scrollbar-width: thin; /* Thin scrollbar */
+	scrollbar-color: #555;
+    
+    
+}
+  
