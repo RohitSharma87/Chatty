@@ -5,21 +5,57 @@ import { Camera, Mail, User } from "lucide-react";
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
-
+  
+  const resizeImage = (base64Image, maxWidth, maxHeight) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Image;
+  
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+  
+        let { width, height } = img;
+  
+        // Maintain aspect ratio
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = (height / width) * maxWidth;
+            width = maxWidth;
+          } else {
+            width = (width / height) * maxHeight;
+            height = maxHeight;
+          }
+        }
+  
+        canvas.width = width;
+        canvas.height = height;
+  
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+    });
+  };
+  
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+  
     const reader = new FileReader();
-
+  
     reader.readAsDataURL(file);
-
+  
     reader.onload = async () => {
       const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      await updateProfile({ profilePic: base64Image });
+  
+      // Resize image to reduce payload size
+      const resizedImage = await resizeImage(base64Image, 512, 512); // Adjust dimensions
+      setSelectedImg(resizedImage);
+  
+      await updateProfile({ profilePic: resizedImage });
     };
   };
+  
 
   return (
     <div className="h-screen pt-20">
